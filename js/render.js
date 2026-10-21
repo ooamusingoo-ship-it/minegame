@@ -675,7 +675,6 @@
           const fightIdx = run && run.fight && run.fight.cid === c.id ? run.fight.idx : -1;
           (run ? root.Game.aliveCampMobs(self.hero, c) : root.Game.campMobs(w, c).map((m) => ({ idx: m.idx, x: m.x, y: m.y, mob: root.Game.makeMob(m.type, m.level, c.ring) })))
             .forEach((m) => {
-              if (w.waypoints.includes(c.id) && m.x === c.cx && m.y === c.cy) return;
               ents.push({ y: m.y, draw: () => {
                 const px = sx(m.x + 0.5), py = sy(m.y + 0.5);
                 const fight = m.idx === fightIdx;

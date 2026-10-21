@@ -362,10 +362,15 @@
     const z = D.ZONES[c.ring];
     const inner = [];
     for (let y = c.y0 + 1; y < c.y0 + c.size - 1; y++) for (let x = c.x0 + 1; x < c.x0 + c.size - 1; x++) inner.push([x, y]);
+    // центр поляны свободен: там встаёт камень телепорта и начинается поход с него,
+    // поэтому монстр в центре прятался бы под камнем и не возрождался бы для игрока
     const order = inner.map((p, i) => ({ p, k: r(i, 9) })).sort((a, b) => a.k - b.k).map((o) => o.p)
-      .filter(([x, y]) => c.type !== 'boss' || x !== c.cx || y !== c.cy);
+      .filter(([x, y]) => x !== c.cx || y !== c.cy);
     const list = [];
-    if (c.type === 'boss') list.push({ idx: 0, x: c.cx, y: c.cy, type: z.boss.type, level: bossLevel(c.d) });
+    if (c.type === 'boss') {
+      const [bx, by] = order.shift();
+      list.push({ idx: 0, x: bx, y: by, type: z.boss.type, level: bossLevel(c.d) });
+    }
     const count = Math.min(order.length, c.type === 'boss' ? 2 : 2 + Math.floor(r(0, 1) * 4));
     for (let i = 0; i < count; i++) {
       const p = pickWeighted(z.pool, (e) => D.POWER_WEIGHTS[e.power] || 5, () => r(i, 2));

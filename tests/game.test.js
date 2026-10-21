@@ -209,6 +209,47 @@ test('чем дальше от города, тем сильнее мобы и �
   }
 });
 
+test('босс возрождается после города, не прячется под камнем телепорта, квест на босса выполним', () => {
+  const h = strongHero();
+  h.level = 60;
+  Game.fullHeal(h);
+  const w = h.world;
+  // любой лагерь босса этого мира, открытый целиком
+  let c = null;
+  for (let r = 2; !c && r < 40; r++) for (let rx = -r; rx <= r && !c; rx++) for (let ry = -r; ry <= r && !c; ry++) {
+    const cl = World.clearingOfRegion(w, rx, ry);
+    if (cl && cl.type === 'boss') c = cl;
+  }
+  assert.ok(c, 'нашли лагерь босса');
+  for (let y = c.y0; y < c.y0 + c.size; y++) for (let x = c.x0; x < c.x0 + c.size; x++) w.open.add(World.key(x, y));
+  // ни один монстр лагеря не стоит в центре, где встаёт камень
+  Game.campMobs(w, c).forEach((m) => assert.ok(m.x !== c.cx || m.y !== c.cy));
+
+  Game.startOuting(h);
+  h.run.pos = { x: c.cx, y: c.cy };
+  fightAll(h, c);
+  assert.strictEqual(Game.aliveCampMobs(h, c).length, 0);
+  assert.ok(w.waypoints.includes(c.id));
+  Game.teleport(h);
+
+  // квест на босса взят уже после первой победы
+  const q = D.QUESTS.find((x) => x.type === 'boss' && x.target === D.ZONES[c.ring].boss.type);
+  assert.ok(Game.acceptQuest(h, q.id).ok);
+  Game.startOuting(h, c.id);
+  const boss = Game.aliveCampMobs(h, c).find((m) => m.mob.boss);
+  assert.ok(boss, 'босс снова в лагере');
+  assert.ok(Game.mobAt(h, boss.x, boss.y), 'на босса можно нажать');
+  Game.act(h, { type: 'move', x: boss.x, y: boss.y }, seeded(5));
+  assert.strictEqual(h.run.phase, 'fight');
+  assert.ok(h.run.fight.mob.boss);
+  for (let k = 0; k < 200 && h.run && h.run.phase === 'fight'; k++) {
+    Game.act(h, { type: 'attack' }, seeded(k));
+    if (h.run) Game.fullHeal(h);
+  }
+  assert.strictEqual(Game.questProgress(h, h.quests.active.find((a) => a.id === q.id)), 1);
+  assert.ok(Game.turnInQuest(h, q.id).ok);
+});
+
 test('смерть: опыт остаётся, половина мешка теряется, остальное — в инвентарь', () => {
   const h = Game.newHero('a', 'human', 'mystic');
   h.xp = 30;
