@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Сапёр Эпохи</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Титульный экран -->
+    <section id="screen-title" class="screen">
+      <div class="title-box">
+        <canvas id="title-art" class="title-art"></canvas>
+        <h1>Сапёр Эпохи</h1>
+        <p class="subtitle">Соло-RPG: бесконечный лес-сапёр, лагеря монстров и прокачка героя</p>
+        <div class="title-buttons">
+          <button id="btn-continue" class="btn btn-big btn-gold">Продолжить</button>
+          <button id="btn-new" class="btn btn-big">Новый герой</button>
+          <button id="btn-import" class="btn btn-small btn-ghost">Загрузить сохранение из файла</button>
+          <input id="import-file" type="file" accept=".json,application/json" hidden>
+        </div>
+        <details class="howto">
+          <summary>Как играть</summary>
+          <ul>
+            <li>Поле — как в сапёре, только вместо мин спрятаны <b>монстры</b>.</li>
+            <li>Вокруг города — <b>бесконечный лес</b>. Это поле сапёра: цифра показывает, сколько мин в 8 соседних клетках.</li>
+            <li><b>Клик</b> — открыть клетку рядом с уже открытыми. <b>Правый клик</b> или <b>долгое нажатие</b> — флажок. <b>Двойной клик</b> по цифре с нужным числом флажков открывает соседей.</li>
+            <li>Мина не убивает сразу, но отнимает много здоровья. Карту можно двигать мышью или пальцем.</li>
+            <li>В лесу спрятаны <b>лагеря монстров</b>, лагеря боссов, родники и сундучки. Бой пошаговый: атака, скилы, зелья.</li>
+            <li>Чем дальше от города — тем гуще мины, сильнее монстры и богаче добыча. Зачищенный лагерь становится камнем телепорта.</li>
+            <li>Добыча копится в <b>мешке</b>. Вернулись в город — всё ваше. Погибли — половина мешка пропадает (опыт остаётся).</li>
+            <li>В городе — квесты, магазин, учитель скилов. На 20 и 40 уровне — смена профессии.</li>
+          </ul>
+        </details>
+      </div>
+    </section>
+
+    <!-- Создание героя -->
+    <section id="screen-create" class="screen hidden">
+      <div class="panel create-panel">
+        <h2>Создание героя</h2>
+        <div class="create-grid">
+          <div class="create-preview">
+            <canvas id="create-portrait" class="portrait-big"></canvas>
+            <div id="create-desc" class="create-desc"></div>
+          </div>
+          <div class="create-form">
+            <label class="field-label">Имя</label>
+            <input id="hero-name" class="input" maxlength="16" placeholder="Имя героя">
+            <label class="field-label">Раса</label>
+            <div id="race-list" class="choice-grid"></div>
+            <label class="field-label">Класс</label>
+            <div id="class-list" class="choice-grid two"></div>
+            <div class="create-actions">
+              <button id="btn-create-back" class="btn btn-ghost">Назад</button>
+              <button id="btn-create" class="btn btn-gold btn-big">В путь!</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Город -->
+    <section id="screen-town" class="screen hidden">
+      <div class="town">
+        <header id="town-hud" class="hud"></header>
+        <nav id="town-tabs" class="tabs"></nav>
+        <main id="town-content" class="panel town-content"></main>
+      </div>
+    </section>
+
+    <!-- Поле -->
+    <section id="screen-field" class="screen hidden">
+      <header id="field-hud" class="hud hud-field"></header>
+      <div id="canvas-wrap" class="canvas-wrap"><canvas id="field-canvas"></canvas></div>
+      <footer class="field-bar">
+        <div class="mode-switch" id="mode-switch">
+          <button data-mode="open" class="mode active" title="Открыть клетку (1)">⛏<span>Открыть</span></button>
+          <button data-mode="flag" class="mode" title="Поставить флажок (2)">🚩<span>Флаг</span></button>
+        </div>
+        <div class="field-hint" id="field-hint"></div>
+        <div class="skill-bar" id="skill-bar"></div>
+        <div class="potion-bar" id="potion-bar"></div>
+      </footer>
+      <div id="field-log" class="field-log"></div>
+
+      <!-- Пошаговый бой -->
+      <div id="fight" class="fight hidden">
+        <div class="fight-box">
+          <div class="fight-title" id="fight-title"></div>
+          <div class="fighters">
+            <div class="fighter" id="fight-hero-wrap">
+              <canvas id="fight-hero" class="fight-portrait"></canvas>
+              <div class="fighter-bars" id="fight-hero-bars"></div>
+            </div>
+            <div class="vs">VS</div>
+            <div class="fighter" id="fight-mob-wrap">
+              <canvas id="fight-mob" class="fight-portrait mob"></canvas>
+              <div class="fighter-bars" id="fight-mob-bars"></div>
+            </div>
+          </div>
+          <div class="fight-log" id="fight-log"></div>
+          <div class="fight-actions" id="fight-actions"></div>
+        </div>
+      </div>
+    </section>
+
+    <div id="modal" class="modal hidden"><div class="modal-box" id="modal-box"></div></div>
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
